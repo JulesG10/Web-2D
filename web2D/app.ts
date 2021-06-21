@@ -29,8 +29,8 @@ class Web2DObject {
   public position: Web2DVector2;
   public texture: CanvasImageSource;
 
-  public distance(obj: Web2DObject): number {
-    return 0;
+    public distance(obj: Web2DObject): number {
+        return Math.pow((obj.position.X - this.position.X), 2) + Math.pow((obj.position.Y - this.position.Y), 2);
   }
 
   public collisionAABB(obj: Web2DObject): boolean {
@@ -43,7 +43,15 @@ class Web2DObject {
       return true;
     }
     return false;
-  }
+    }
+
+    public update(deltatime: number) {
+
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+
+    }
 }
 
 class Web2DAnimation {

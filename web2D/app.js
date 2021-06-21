@@ -2,7 +2,7 @@ var Web2DObject = /** @class */ (function () {
     function Web2DObject() {
     }
     Web2DObject.prototype.distance = function (obj) {
-        return 0;
+        return Math.pow((obj.position.X - this.position.X), 2) + Math.pow((obj.position.Y - this.position.Y), 2);
     };
     Web2DObject.prototype.collisionAABB = function (obj) {
         if (this.position.X < obj.position.X + obj.size.Width &&
@@ -12,6 +12,10 @@ var Web2DObject = /** @class */ (function () {
             return true;
         }
         return false;
+    };
+    Web2DObject.prototype.update = function (deltatime) {
+    };
+    Web2DObject.prototype.draw = function (ctx) {
     };
     return Web2DObject;
 }());
