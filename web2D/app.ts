@@ -14,6 +14,7 @@ interface Web2DInitSettings {
   Parent?: HTMLElement;
   Append?: boolean;
   FramesRate?: number;
+  Focus?: boolean;
 }
 
 interface Web2DARGB {
@@ -24,9 +25,9 @@ interface Web2DARGB {
 }
 
 class Web2DColor {
-  public color: Web2DARGB;
+  public color: Web2DARGB = { a: 255, r: 0, g: 0, b: 0 };
 
-  constructor(a, r, g, b) {
+  constructor(a: number = 255, r: number = 0, g: number = 0, b: number = 0) {
     this.color.a = a;
     this.color.b = b;
     this.color.g = g;
@@ -76,14 +77,14 @@ class Web2DAnimation {
   private textures: CanvasImageSource[];
   private position: Web2DVector2;
   private size: Web2DSize;
-  private delay: number;
-  private time: number;
+  private delay: number = 0;
+  private time: number = 0;
 
   constructor(
     textures: CanvasImageSource[],
-    position: Web2DVector2,
-    size: Web2DSize,
-    delay: number
+    position: Web2DVector2 = { X: 0, Y: 0 },
+    size: Web2DSize = { Width: 0, Height: 0 },
+    delay: number = 0
   ) {
     this.textures = textures;
     this.position = position;
@@ -91,28 +92,33 @@ class Web2DAnimation {
     this.delay = delay;
   }
 
-  public update(deltatime: number) 
-  {
+  public update(deltatime: number) {
       this.time += deltatime;
-      if(this.time > this.delay)
-      {
-          this.time = 0;
-          this.index++;
-          if(this.index > this.textures.length)
-          {
-              this.index = 0;
-          }
+    if (this.time > this.delay) {
+      this.time = 0;
+      this.index++;
+      if (this.index >= this.textures.length) {
+        this.index = 0;
       }
+    }
   }
 
   public draw(ctx: CanvasRenderingContext2D) {
-    ctx.drawImage(
-      this.textures[this.index],
-      this.position.X,
-      this.position.Y,
-      this.size.Width,
-      this.size.Height
-    );
+    if (!this.size.Width && !this.size.Height) {
+      ctx.drawImage(
+        this.textures[this.index],
+        this.position.X,
+        this.position.Y
+      );
+    } else {
+      ctx.drawImage(
+        this.textures[this.index],
+        this.position.X,
+        this.position.Y,
+        this.size.Width,
+        this.size.Height
+      );
+    }
   }
 }
 
@@ -174,6 +180,7 @@ class Web2D {
     Parent: document.body,
     Append: true,
     FramesRate: 60,
+    Focus: false,
   };
 
   protected get initSettings(): Web2DInitSettings {
@@ -195,14 +202,15 @@ class Web2D {
     window.addEventListener("resize", () => {
       this.onresize();
     });
+    if (this.initSettings.Focus) {
+      window.addEventListener("focus", () => {
+        this.onresume();
+      });
 
-    window.addEventListener("focus", () => {
-      this.onresume();
-    });
-
-    window.addEventListener("blur", () => {
-      this.onpause();
-    });
+      window.addEventListener("blur", () => {
+        this.onpause();
+      });
+    }
 
     if (settings.FullScreen) {
       this.canvas.width =
@@ -224,6 +232,8 @@ class Web2D {
         "Unable to initialize 2d context. Your browser or machine may not support it."
       );
     }
+
+    this.web2dCanvas.setColor(this.ctx, new Web2DColor(255, 0, 0, 0));
   }
 
   public start() {
@@ -284,22 +294,46 @@ class Web2D {
 }
 
 class Test2d extends Web2D {
+  private animation: Web2DAnimation;
+
   constructor(canvas: HTMLCanvasElement) {
     super(canvas);
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
     super.draw(ctx);
+    this.animation.draw(ctx);
+  }
+
+  public createAnimation(src: CanvasImageSource[], sec_delay: number) {
+    this.animation = new Web2DAnimation(
+      src,
+      { X: 0, Y: 0 },
+      { Width: 50, Height: 50 },
+        sec_delay/1000
+    );
   }
 
   public update(deltatime: number): void {
     super.update(deltatime);
+    this.animation.update(deltatime);
   }
 }
 
 window.onload = () => {
   const canvas: HTMLCanvasElement = document.createElement("canvas");
+    let assets = ["https://i.pinimg.com/736x/ed/a5/d5/eda5d54ab0a23440232ca68114645dce--tableau-design-roy-lichtenstein.jpg", "https://i.pinimg.com/originals/26/76/3d/26763d481172f5dc599d151570b38ded.jpg","https://s1.piq.land/2012/03/30/NYT7ph1dRivUBnXF6HJEMAlD_400x400.png"];
+  let sources: CanvasImageSource[] = [];
+  for (let i = 0; i < assets.length; i++) {
+    let img: HTMLImageElement = document.createElement("img");
+    img.src = assets[i];
+    img.style.display = "none";
+    sources.push(img);
+    document.body.appendChild(img);
+  }
+
   const game = new Test2d(canvas);
   game.init();
+  game.createAnimation(sources, 0.1);
   game.start();
 };
