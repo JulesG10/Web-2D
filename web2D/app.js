@@ -1,41 +1,3 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var Web2DColor = /** @class */ (function () {
-    function Web2DColor(a, r, g, b) {
-        if (a === void 0) { a = 255; }
-        if (r === void 0) { r = 0; }
-        if (g === void 0) { g = 0; }
-        if (b === void 0) { b = 0; }
-        this.color = { a: 255, r: 0, g: 0, b: 0 };
-        this.color.a = a;
-        this.color.b = b;
-        this.color.g = g;
-        this.color.r = r;
-    }
-    Web2DColor.prototype.getRgb = function () {
-        return ("rgb(" + this.color.r + "," + this.color.g + "," + this.color.b + ")");
-    };
-    Web2DColor.prototype.getHex = function () {
-        return ("#" +
-            this.color.r.toString(16) +
-            this.color.g.toString(16) +
-            this.color.b.toString(16));
-    };
-    return Web2DColor;
-}());
 var Web2DObject = /** @class */ (function () {
     function Web2DObject() {
     }
@@ -86,39 +48,32 @@ var Web2DAnimation = /** @class */ (function () {
     };
     return Web2DAnimation;
 }());
-/*
-class Web2DRect {
-
-}
-
-class Web2DCircle {
-
-}
-
-class Web2DTriangle {
-
-}
-
-class Web2DPath {
-
-}
-*/
 var Web2DCanvas = /** @class */ (function () {
     function Web2DCanvas() {
     }
-    Web2DCanvas.prototype.setColor = function (ctx, color) {
-        ctx.fillStyle = color.getRgb();
-    };
-    Web2DCanvas.prototype.getColor = function (ctx) {
-        var rgbStr = ctx.fillStyle.toString().replace("rgb(", "").replace(")", "");
-        var colorStr = rgbStr.split(",");
-        return new Web2DColor(255, parseInt(colorStr[0]), parseInt(colorStr[1]), parseInt(colorStr[2]));
-    };
     Web2DCanvas.prototype.clear = function (ctx, size) {
-        var last = this.getColor(ctx);
-        this.setColor(ctx, new Web2DColor(255, 0, 0, 0));
+        ctx.clearRect(0, 0, size.Width, size.Height);
+        ctx.fillStyle = "black";
         ctx.fillRect(0, 0, size.Width, size.Height);
-        this.setColor(ctx, last);
+    };
+    Web2DCanvas.prototype.line = function (ctx, color, point1, point2, width) {
+        if (width === void 0) { width = 1; }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.beginPath();
+        ctx.moveTo(point1.X, point1.Y);
+        ctx.lineTo(point2.X, point2.Y);
+        ctx.stroke();
+        ctx.closePath();
+    };
+    Web2DCanvas.prototype.pixel = function (ctx, r, g, b, a, point) {
+        var id = ctx.createImageData(1, 1);
+        var d = id.data;
+        d[0] = r;
+        d[1] = g;
+        d[2] = b;
+        d[3] = a;
+        ctx.putImageData(id, point.X, point.Y);
     };
     return Web2DCanvas;
 }());
@@ -181,7 +136,6 @@ var Web2D = /** @class */ (function () {
         if (!this.ctx) {
             throw new Error("Unable to initialize 2d context. Your browser or machine may not support it.");
         }
-        this.web2dCanvas.setColor(this.ctx, new Web2DColor(255, 0, 0, 0));
     };
     Web2D.prototype.start = function () {
         var _this = this;
@@ -233,38 +187,4 @@ var Web2D = /** @class */ (function () {
     };
     return Web2D;
 }());
-var Test2d = /** @class */ (function (_super) {
-    __extends(Test2d, _super);
-    function Test2d(canvas) {
-        return _super.call(this, canvas) || this;
-    }
-    Test2d.prototype.draw = function (ctx) {
-        _super.prototype.draw.call(this, ctx);
-        this.animation.draw(ctx);
-    };
-    Test2d.prototype.createAnimation = function (src, sec_delay) {
-        this.animation = new Web2DAnimation(src, { X: 0, Y: 0 }, { Width: 50, Height: 50 }, sec_delay / 1000);
-    };
-    Test2d.prototype.update = function (deltatime) {
-        _super.prototype.update.call(this, deltatime);
-        this.animation.update(deltatime);
-    };
-    return Test2d;
-}(Web2D));
-window.onload = function () {
-    var canvas = document.createElement("canvas");
-    var assets = ["https://i.pinimg.com/736x/ed/a5/d5/eda5d54ab0a23440232ca68114645dce--tableau-design-roy-lichtenstein.jpg", "https://i.pinimg.com/originals/26/76/3d/26763d481172f5dc599d151570b38ded.jpg", "https://s1.piq.land/2012/03/30/NYT7ph1dRivUBnXF6HJEMAlD_400x400.png"];
-    var sources = [];
-    for (var i = 0; i < assets.length; i++) {
-        var img = document.createElement("img");
-        img.src = assets[i];
-        img.style.display = "none";
-        sources.push(img);
-        document.body.appendChild(img);
-    }
-    var game = new Test2d(canvas);
-    game.init();
-    game.createAnimation(sources, 0.1);
-    game.start();
-};
 //# sourceMappingURL=app.js.map

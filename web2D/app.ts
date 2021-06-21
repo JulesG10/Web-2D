@@ -24,32 +24,6 @@ interface Web2DARGB {
   b: number;
 }
 
-class Web2DColor {
-  public color: Web2DARGB = { a: 255, r: 0, g: 0, b: 0 };
-
-  constructor(a: number = 255, r: number = 0, g: number = 0, b: number = 0) {
-    this.color.a = a;
-    this.color.b = b;
-    this.color.g = g;
-    this.color.r = r;
-  }
-
-  public getRgb(): string {
-    return (
-      "rgb(" + this.color.r + "," + this.color.g + "," + this.color.b + ")"
-    );
-  }
-
-  public getHex() {
-    return (
-      "#" +
-      this.color.r.toString(16) +
-      this.color.g.toString(16) +
-      this.color.b.toString(16)
-    );
-  }
-}
-
 class Web2DObject {
   public size: Web2DSize;
   public position: Web2DVector2;
@@ -93,7 +67,7 @@ class Web2DAnimation {
   }
 
   public update(deltatime: number) {
-      this.time += deltatime;
+    this.time += deltatime;
     if (this.time > this.delay) {
       this.time = 0;
       this.index++;
@@ -122,52 +96,46 @@ class Web2DAnimation {
   }
 }
 
-interface Web2DPathPoint {
-  id: number;
-  position: Web2DVector2;
-}
-
-/*
-class Web2DRect {
-
-}
-
-class Web2DCircle {
-
-}
-
-class Web2DTriangle {
-
-}
-
-class Web2DPath {
-
-}
-*/
-
 class Web2DCanvas {
   constructor() {}
 
-  public setColor(ctx: CanvasRenderingContext2D, color: Web2DColor) {
-    ctx.fillStyle = color.getRgb();
-  }
-
-  public getColor(ctx: CanvasRenderingContext2D): Web2DColor {
-    let rgbStr = ctx.fillStyle.toString().replace("rgb(", "").replace(")", "");
-    let colorStr = rgbStr.split(",");
-    return new Web2DColor(
-      255,
-      parseInt(colorStr[0]),
-      parseInt(colorStr[1]),
-      parseInt(colorStr[2])
-    );
-  }
-
   public clear(ctx: CanvasRenderingContext2D, size: Web2DSize): void {
-    let last: Web2DColor = this.getColor(ctx);
-    this.setColor(ctx, new Web2DColor(255, 0, 0, 0));
+    ctx.clearRect(0, 0, size.Width, size.Height);
+    ctx.fillStyle = "black";
     ctx.fillRect(0, 0, size.Width, size.Height);
-    this.setColor(ctx, last);
+  }
+
+  public line(
+    ctx: CanvasRenderingContext2D,
+    color: string,
+    point1: Web2DVector2,
+    point2: Web2DVector2,
+    width: number = 1
+  ): void {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.beginPath();
+    ctx.moveTo(point1.X, point1.Y);
+    ctx.lineTo(point2.X, point2.Y);
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  public pixel(
+    ctx: CanvasRenderingContext2D,
+    r: number,
+    g: number,
+    b: number,
+    a: number,
+    point: Web2DVector2
+  ) {
+    let id = ctx.createImageData(1, 1);
+    let d = id.data;
+    d[0] = r;
+    d[1] = g;
+    d[2] = b;
+    d[3] = a;
+    ctx.putImageData(id, point.X, point.Y);
   }
 }
 
@@ -232,8 +200,6 @@ class Web2D {
         "Unable to initialize 2d context. Your browser or machine may not support it."
       );
     }
-
-    this.web2dCanvas.setColor(this.ctx, new Web2DColor(255, 0, 0, 0));
   }
 
   public start() {
@@ -292,48 +258,3 @@ class Web2D {
     this.web2dCanvas.clear(this.ctx, size);
   }
 }
-
-class Test2d extends Web2D {
-  private animation: Web2DAnimation;
-
-  constructor(canvas: HTMLCanvasElement) {
-    super(canvas);
-  }
-
-  public draw(ctx: CanvasRenderingContext2D): void {
-    super.draw(ctx);
-    this.animation.draw(ctx);
-  }
-
-  public createAnimation(src: CanvasImageSource[], sec_delay: number) {
-    this.animation = new Web2DAnimation(
-      src,
-      { X: 0, Y: 0 },
-      { Width: 50, Height: 50 },
-        sec_delay/1000
-    );
-  }
-
-  public update(deltatime: number): void {
-    super.update(deltatime);
-    this.animation.update(deltatime);
-  }
-}
-
-window.onload = () => {
-  const canvas: HTMLCanvasElement = document.createElement("canvas");
-    let assets = ["https://i.pinimg.com/736x/ed/a5/d5/eda5d54ab0a23440232ca68114645dce--tableau-design-roy-lichtenstein.jpg", "https://i.pinimg.com/originals/26/76/3d/26763d481172f5dc599d151570b38ded.jpg","https://s1.piq.land/2012/03/30/NYT7ph1dRivUBnXF6HJEMAlD_400x400.png"];
-  let sources: CanvasImageSource[] = [];
-  for (let i = 0; i < assets.length; i++) {
-    let img: HTMLImageElement = document.createElement("img");
-    img.src = assets[i];
-    img.style.display = "none";
-    sources.push(img);
-    document.body.appendChild(img);
-  }
-
-  const game = new Test2d(canvas);
-  game.init();
-  game.createAnimation(sources, 0.1);
-  game.start();
-};
