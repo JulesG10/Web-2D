@@ -1,0 +1,7 @@
+C:\Users\jules\source\repos\web2D\web2D\bin\TypeScriptHTMLApp1.dll.config
+C:\Users\jules\source\repos\web2D\web2D\bin\TypeScriptHTMLApp1.dll
+C:\Users\jules\source\repos\web2D\web2D\bin\TypeScriptHTMLApp1.pdb
+C:\Users\jules\source\repos\web2D\web2D\obj\Debug\web2D.csproj.AssemblyReference.cache
+C:\Users\jules\source\repos\web2D\web2D\obj\Debug\web2D.csproj.CoreCompileInputs.cache
+C:\Users\jules\source\repos\web2D\web2D\obj\Debug\TypeScriptHTMLApp1.dll
+C:\Users\jules\source\repos\web2D\web2D\obj\Debug\TypeScriptHTMLApp1.pdb
