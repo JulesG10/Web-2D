@@ -2,7 +2,8 @@ var Web2DObject = /** @class */ (function () {
     function Web2DObject() {
     }
     Web2DObject.prototype.distance = function (obj) {
-        return Math.pow((obj.position.X - this.position.X), 2) + Math.pow((obj.position.Y - this.position.Y), 2);
+        return (Math.pow(obj.position.X - this.position.X, 2) +
+            Math.pow(obj.position.Y - this.position.Y, 2));
     };
     Web2DObject.prototype.collisionAABB = function (obj) {
         if (this.position.X < obj.position.X + obj.size.Width &&
@@ -13,14 +14,47 @@ var Web2DObject = /** @class */ (function () {
         }
         return false;
     };
-    Web2DObject.prototype.update = function (deltatime) {
-    };
-    Web2DObject.prototype.draw = function (ctx) {
+    Web2DObject.prototype.update = function (deltatime) { };
+    Web2DObject.prototype.draw = function (ctx) { };
+    Web2DObject.prototype.drawAnimation = function (ctx, image, state) {
     };
     return Web2DObject;
 }());
-var Web2DAnimation = /** @class */ (function () {
-    function Web2DAnimation(textures, position, size, delay) {
+var Web2DObjectAnimation = /** @class */ (function () {
+    function Web2DObjectAnimation(textures, obj, delay) {
+        if (delay === void 0) { delay = 0; }
+        this._state = 0;
+        this.delay = 0;
+        this.time = 0;
+        this.textures = textures;
+        this.obj = obj;
+        this.delay = delay;
+    }
+    Object.defineProperty(Web2DObjectAnimation.prototype, "state", {
+        get: function () {
+            return this._state;
+        },
+        enumerable: false,
+        configurable: true
+    });
+    Web2DObjectAnimation.prototype.update = function (deltatime) {
+        this.time += deltatime;
+        if (this.time > this.delay) {
+            this.time = 0;
+            this._state++;
+            if (this._state >= this.textures.length) {
+                this._state = 0;
+            }
+            this.obj.update(deltatime);
+        }
+    };
+    Web2DObjectAnimation.prototype.draw = function (ctx) {
+        this.obj.drawAnimation(ctx, this.textures[this.state], this.state);
+    };
+    return Web2DObjectAnimation;
+}());
+var Web2DImageAnimation = /** @class */ (function () {
+    function Web2DImageAnimation(textures, position, size, delay) {
         if (position === void 0) { position = { X: 0, Y: 0 }; }
         if (size === void 0) { size = { Width: 0, Height: 0 }; }
         if (delay === void 0) { delay = 0; }
@@ -32,7 +66,7 @@ var Web2DAnimation = /** @class */ (function () {
         this.size = size;
         this.delay = delay;
     }
-    Web2DAnimation.prototype.update = function (deltatime) {
+    Web2DImageAnimation.prototype.update = function (deltatime) {
         this.time += deltatime;
         if (this.time > this.delay) {
             this.time = 0;
@@ -42,7 +76,7 @@ var Web2DAnimation = /** @class */ (function () {
             }
         }
     };
-    Web2DAnimation.prototype.draw = function (ctx) {
+    Web2DImageAnimation.prototype.draw = function (ctx) {
         if (!this.size.Width && !this.size.Height) {
             ctx.drawImage(this.textures[this.index], this.position.X, this.position.Y);
         }
@@ -50,7 +84,7 @@ var Web2DAnimation = /** @class */ (function () {
             ctx.drawImage(this.textures[this.index], this.position.X, this.position.Y, this.size.Width, this.size.Height);
         }
     };
-    return Web2DAnimation;
+    return Web2DImageAnimation;
 }());
 var Web2DCanvas = /** @class */ (function () {
     function Web2DCanvas() {

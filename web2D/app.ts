@@ -29,8 +29,11 @@ class Web2DObject {
   public position: Web2DVector2;
   public texture: CanvasImageSource;
 
-    public distance(obj: Web2DObject): number {
-        return Math.pow((obj.position.X - this.position.X), 2) + Math.pow((obj.position.Y - this.position.Y), 2);
+  public distance(obj: Web2DObject): number {
+    return (
+      Math.pow(obj.position.X - this.position.X, 2) +
+      Math.pow(obj.position.Y - this.position.Y, 2)
+    );
   }
 
   public collisionAABB(obj: Web2DObject): boolean {
@@ -43,18 +46,57 @@ class Web2DObject {
       return true;
     }
     return false;
-    }
+  }
 
-    public update(deltatime: number) {
+  public update(deltatime: number) {}
 
-    }
+    public draw(ctx: CanvasRenderingContext2D) { }
 
-    public draw(ctx: CanvasRenderingContext2D) {
-
+    public drawAnimation(ctx: CanvasRenderingContext2D, image: CanvasImageSource, state: number) {
     }
 }
 
-class Web2DAnimation {
+class Web2DObjectAnimation {
+    private _state: number = 0;
+    public get state(): number  {
+        return this._state;
+    }
+    private textures: CanvasImageSource[];
+    private position: Web2DVector2;
+    private size: Web2DSize;
+    private delay: number = 0;
+    private time: number = 0;
+    private obj: Web2DObject;
+    
+
+    constructor(
+        textures: CanvasImageSource[],
+        obj: Web2DObject,
+        delay: number = 0
+    ) {
+        this.textures = textures;
+        this.obj = obj;
+        this.delay = delay;
+    }
+
+    public update(deltatime: number) {
+        this.time += deltatime;
+        if (this.time > this.delay) {
+            this.time = 0;
+            this._state++;
+            if (this._state >= this.textures.length) {
+                this._state = 0;
+            }
+            this.obj.update(deltatime);
+        }
+    }
+
+    public draw(ctx: CanvasRenderingContext2D) {
+        this.obj.drawAnimation(ctx, this.textures[this.state], this.state);
+    }
+}
+
+class Web2DImageAnimation {
   private index: number = 0;
   private textures: CanvasImageSource[];
   private position: Web2DVector2;
